@@ -1,10 +1,17 @@
 import java.util.Scanner;
 
+class InsulinData {
+
+    double currentGlucoseLevel; // مستوى الجلوكوز الحالي
+    double targetGlucoseLevel; // مستوى الجلوكوز المستهدف
+    double dose; // جرعة الأنسولين
+}
+
 public class App {
-    static InsulinData[] insulinDatas;
 
     public static void main(String[] args) throws Exception {
 
+        Scanner in = new Scanner(System.in);
         // Current glucose level
         // مستوى الجلوكوز الحالي
         double currentGlucoseLevel;
@@ -14,14 +21,16 @@ public class App {
         // Target (mg/dL)
         // الهدف (ملغ/ديسيلتر)
         double targetGlucoseLevel = 110;
+
         int currentDoseNumber = 0; // عدد الجرعات الحالية
-        Scanner in = new Scanner(System.in);
+
         printHello(); // طباعة رسالة ترحيبية
-        System.out.println("🩺 Welcome to the Insulin Dose Calculator!");
+
+        System.out.println("🩺 Welcome to the Insulin Dose Calculator! \n Enter the number of Dose:");
         // 🩺 مرحبًا بك في حاسبة جرعات الأنسولين!
 
         int numOfDose = in.nextInt(); // إدخال عدد الجرعات
-        insulinDatas = new InsulinData[numOfDose]; // إنشاء مصفوفة لتخزين بيانات الجرعات
+        InsulinData[] insulinDatas = new InsulinData[numOfDose]; // إنشاء مصفوفة لتخزين بيانات الجرعات
         while (numOfDose > currentDoseNumber) { // التكرار حتى يتم إدخال جميع الجرعات
             System.out.println("\nPlease choose an operation:");
             // الرجاء اختيار عملية:
@@ -39,11 +48,14 @@ public class App {
                     System.out.print("Enter current glucose level (mg/dL): ");
                     // أدخل مستوى الجلوكوز الحالي (ملغ/ديسيلتر):
 
-                    currentGlucoseLevel = in.nextInt(); // إدخال مستوى الجلوكوز الحالي
-                    double dose = injectInsulin(currentGlucoseLevel, targetGlucoseLevel, insulinSensitivityFactor);
+                    currentGlucoseLevel = in.nextDouble(); // إدخال مستوى الجلوكوز الحالي
+                    double calculateInsulin = calculateInsulinDose(currentGlucoseLevel, targetGlucoseLevel,
+                            insulinSensitivityFactor);
+                    double dose = injectInsulin(calculateInsulin);
                     // حساب الجرعة وحقن الأنسولين
                     insulinDatas[currentDoseNumber] = new InsulinData(); // إنشاء كائن جديد لتخزين بيانات الجرعة
-                    insulinDatas[currentDoseNumber].currentGlucoseLevel = currentGlucoseLevel; // تخزين مستوى الجلوكوز الحالي
+                    insulinDatas[currentDoseNumber].currentGlucoseLevel = currentGlucoseLevel; // تخزين مستوى الجلوكوز
+                                                                                               // الحالي
                     insulinDatas[currentDoseNumber].targetGlucoseLevel = targetGlucoseLevel; // تخزين الهدف
                     insulinDatas[currentDoseNumber].dose = dose; // تخزين الجرعة
 
@@ -60,10 +72,10 @@ public class App {
 
         }
         System.out.println("""
-                you finshed number of does to show the hestory of does press enter
+                you finshed number of does  
                 """);
         // لقد انتهيت من إدخال عدد الجرعات. لعرض السجل، اضغط على Enter.
-        
+
         printhistory(insulinDatas); // عرض سجل الجرعات
         System.out.println("""
                 thank you to use insulion pump rest the program to start again
@@ -80,15 +92,15 @@ public class App {
         if (excess <= 0) {
             return 0; // لا حاجة للأنسولين
         }
-        return excess / insulinSensitivityFactor; // حساب الجرعة المطلوبة
+        double dose = excess / insulinSensitivityFactor;
+        return dose; // حساب الجرعة المطلوبة
     }
 
-    static double injectInsulin(double currentGlucoseLevel, double targetGlucoseLevel,
-            double insulinSensitivityFactor) {
-        double dose = calculateInsulinDose(currentGlucoseLevel, targetGlucoseLevel, insulinSensitivityFactor);
+    static double injectInsulin(double dose) {
+
         // حساب الجرعة المطلوبة
         if (dose > 0) {
-            System.out.printf("✅ Injected %.2f units of insulin%n", dose);
+            System.out.println("✅ Injected " + dose + " units of insulin");
             // ✅ تم حقن %.2f وحدة من الأنسولين
 
         } else {
@@ -103,20 +115,22 @@ public class App {
         if (insulinData[0] == null) {
             System.out.println("📭 No doses recorded yet.");
             // 📭 لم يتم تسجيل أي جرعات بعد.
-            return;
-        }
-        for (int i = 0; i < insulinData.length; i++) {
-            if (insulinData[i] != null) {
-                System.out.println("💉 Dose #" + (i + 1) + ":");
-                // 💉 الجرعة رقم #
-                System.out.println("🩸 Current Glucose: " + insulinData[i].currentGlucoseLevel + " mg/dL");
-                // 🩸 الجلوكوز الحالي:
-                System.out.println("🎯 Target Glucose: " + insulinData[i].targetGlucoseLevel + " mg/dL");
-                // 🎯 الجلوكوز المستهدف:
-                System.out.println("💊 Insulin Dose: " + insulinData[i].dose + " units\n");
-                // 💊 جرعة الأنسولين:
+
+        } else {
+            for (int i = 0; i < insulinData.length; i++) {
+                if (insulinData[i] != null) {
+                    System.out.println("💉 Dose #" + (i + 1) + ":");
+                    // 💉 الجرعة رقم #
+                    System.out.println("🩸 Current Glucose: " + insulinData[i].currentGlucoseLevel + " mg/dL");
+                    // 🩸 الجلوكوز الحالي:
+                    System.out.println("🎯 Target Glucose: " + insulinData[i].targetGlucoseLevel + " mg/dL");
+                    // 🎯 الجلوكوز المستهدف:
+                    System.out.println("💊 Insulin Dose: " + insulinData[i].dose + " units\n");
+                    // 💊 جرعة الأنسولين:
+                }
             }
         }
+
     }
 
     static void printHello() {
@@ -159,11 +173,4 @@ public class App {
                                                                                    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
                         """);
     }
-}
-
-class InsulinData {
-
-    double currentGlucoseLevel; // مستوى الجلوكوز الحالي
-    double targetGlucoseLevel; // مستوى الجلوكوز المستهدف
-    double dose; // جرعة الأنسولين
 }
