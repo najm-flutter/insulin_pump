@@ -2,36 +2,33 @@ import java.util.Scanner;
 
 class InsulinData {
 
-    double currentGlucoseLevel; // مستوى الجلوكوز الحالي
-    double targetGlucoseLevel; // مستوى الجلوكوز المستهدف
-    double dose; // جرعة الأنسولين
+    double currentLevel; // مستوى الجلوكوز الحالي
+    double NATURAL_LEVEL; // مستوى الجلوكوز المستهدف
+    double insulinDose; // جرعة الأنسولين
 }
 
 public class App {
 
     public static void main(String[] args) throws Exception {
-
-        Scanner in = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
         // Current glucose level
         // مستوى الجلوكوز الحالي
-        double currentGlucoseLevel;
+        double currentLevel;
         // How many points of sugar are lowered by one unit of insulin
         // عدد النقاط التي يتم خفضها من السكر بواسطة وحدة واحدة من الأنسولين
-        double insulinSensitivityFactor = 50;
+        final double UNIT_INSULIN = 50;
         // Target (mg/dL)
         // الهدف (ملغ/ديسيلتر)
-        double targetGlucoseLevel = 110;
+        final double NATURAL_LEVEL = 110;
 
-        int currentDoseNumber = 0; // عدد الجرعات الحالية
+        printWelcomeMessage(); // طباعة رسالة ترحيبية
 
-        printHello(); // طباعة رسالة ترحيبية
-
-        System.out.println("🩺 Welcome to the Insulin Dose Calculator! \n Enter the number of Dose:");
+        System.out.println("🩺 Welcome to the Insulin Dose Calculator! \n Enter the number of doses for this day:");
         // 🩺 مرحبًا بك في حاسبة جرعات الأنسولين!
-
-        int numOfDose = in.nextInt(); // إدخال عدد الجرعات
-        InsulinData[] insulinDatas = new InsulinData[numOfDose]; // إنشاء مصفوفة لتخزين بيانات الجرعات
-        while (numOfDose > currentDoseNumber) { // التكرار حتى يتم إدخال جميع الجرعات
+        int i = 0;
+        int doseCount = scanner.nextInt(); // إدخال عدد الجرعات
+        InsulinData[] doesArray = new InsulinData[doseCount]; // إنشاء مصفوفة لتخزين بيانات الجرعات
+        while (doseCount > i) {
             System.out.println("\nPlease choose an operation:");
             // الرجاء اختيار عملية:
             System.out.println("1 - Calculate insulin dose");
@@ -41,62 +38,59 @@ public class App {
             System.out.print("Enter your choice: ");
             // أدخل اختيارك:
 
-            int choose = in.nextInt(); // إدخال الخيار
+            int choice = scanner.nextInt(); // إدخال الخيار
 
-            switch (choose) {
+            switch (choice) {
                 case 1:
                     System.out.print("Enter current glucose level (mg/dL): ");
                     // أدخل مستوى الجلوكوز الحالي (ملغ/ديسيلتر):
 
-                    currentGlucoseLevel = in.nextDouble(); // إدخال مستوى الجلوكوز الحالي
-                    double calculateInsulin = calculateInsulinDose(currentGlucoseLevel, targetGlucoseLevel,
-                            insulinSensitivityFactor);
-                    double dose = injectInsulin(calculateInsulin);
-                    // حساب الجرعة وحقن الأنسولين
-                    insulinDatas[currentDoseNumber] = new InsulinData(); // إنشاء كائن جديد لتخزين بيانات الجرعة
-                    insulinDatas[currentDoseNumber].currentGlucoseLevel = currentGlucoseLevel; // تخزين مستوى الجلوكوز
-                                                                                               // الحالي
-                    insulinDatas[currentDoseNumber].targetGlucoseLevel = targetGlucoseLevel; // تخزين الهدف
-                    insulinDatas[currentDoseNumber].dose = dose; // تخزين الجرعة
+                    currentLevel = scanner.nextDouble(); // إدخال مستوى الجلوكوز الحالي
+                    double calculatedDose = calculateDose(currentLevel, NATURAL_LEVEL, UNIT_INSULIN);
+                    injectDose(calculatedDose);
 
-                    currentDoseNumber++; // زيادة عدد الجرعات الحالية
+                    // حساب الجرعة وحقن الأنسولين
+                    doesArray[i] = new InsulinData(); // إنشاء كائن جديد لتخزين بيانات الجرعة
+                    doesArray[i].currentLevel = currentLevel; // تخزين مستوى الجلوكوز الحالي
+                    doesArray[i].NATURAL_LEVEL = NATURAL_LEVEL; // تخزين الهدف
+                    doesArray[i].insulinDose = calculatedDose; // تخزين الجرعة
+                    i++;
                     break;
                 case 2:
-                    printhistory(insulinDatas); // عرض سجل الجرعات
+                    showHistory(doesArray); // عرض سجل الجرعات
                     break;
                 default:
                     System.out.println("Incorrect choice. Please try again.");
                     // اختيار غير صحيح. الرجاء المحاولة مرة أخرى.
                     break;
             }
-
         }
         System.out.println("""
-                you finshed number of does  
+                You finished entering the number of doses.
                 """);
-        // لقد انتهيت من إدخال عدد الجرعات. لعرض السجل، اضغط على Enter.
+        // لقد انتهيت من إدخال عدد الجرعات.
 
-        printhistory(insulinDatas); // عرض سجل الجرعات
+        showHistory(doesArray); // عرض سجل الجرعات
         System.out.println("""
-                thank you to use insulion pump rest the program to start again
+                Thank you for using the insulin pump. Restart the program to begin again.
                 """);
         // شكرًا لاستخدام مضخة الأنسولين. أعد تشغيل البرنامج للبدء من جديد.
 
-        in.close(); // إغلاق المدخل
+        scanner.close(); // إغلاق المدخل
     }
 
-    static double calculateInsulinDose(double currentGlucoseLevel, double targetGlucoseLevel,
-            double insulinSensitivityFactor) {
+    static double calculateDose(double currentLevel, double NATURAL_LEVEL, double UNIT_INSULIN) {
 
-        double excess = currentGlucoseLevel - targetGlucoseLevel; // حساب الفرق بين المستوى الحالي والهدف
+        double excess = currentLevel - NATURAL_LEVEL; // حساب الفرق بين المستوى الحالي والهدف
         if (excess <= 0) {
             return 0; // لا حاجة للأنسولين
+        } else {
+            return excess / UNIT_INSULIN; // حساب الجرعة المطلوبة
+
         }
-        double dose = excess / insulinSensitivityFactor;
-        return dose; // حساب الجرعة المطلوبة
     }
 
-    static double injectInsulin(double dose) {
+    static void injectDose(double dose) {
 
         // حساب الجرعة المطلوبة
         if (dose > 0) {
@@ -108,32 +102,34 @@ public class App {
             // 🟢 لا حاجة لحقن الأنسولين الآن.
 
         }
-        return dose; // إرجاع الجرعة
+
     }
 
-    static void printhistory(InsulinData[] insulinData) {
-        if (insulinData[0] == null) {
+    static void showHistory(InsulinData[] doesArray) {
+        if (doesArray[0] == null) {
             System.out.println("📭 No doses recorded yet.");
             // 📭 لم يتم تسجيل أي جرعات بعد.
 
         } else {
-            for (int i = 0; i < insulinData.length; i++) {
-                if (insulinData[i] != null) {
+            for (int i = 0; i < doesArray.length; i++) {
+                if (doesArray[i] != null) {
                     System.out.println("💉 Dose #" + (i + 1) + ":");
                     // 💉 الجرعة رقم #
-                    System.out.println("🩸 Current Glucose: " + insulinData[i].currentGlucoseLevel + " mg/dL");
+                    System.out.println("🩸 Current Glucose: " + doesArray[i].currentLevel + " mg/dL");
                     // 🩸 الجلوكوز الحالي:
-                    System.out.println("🎯 Target Glucose: " + insulinData[i].targetGlucoseLevel + " mg/dL");
+                    System.out.println("🎯 Natural Glucose Level: " + doesArray[i].NATURAL_LEVEL + " mg/dL");
                     // 🎯 الجلوكوز المستهدف:
-                    System.out.println("💊 Insulin Dose: " + insulinData[i].dose + " units\n");
+                    System.out.println("💊 Insulin Dose: " + doesArray[i].insulinDose + " units\n");
                     // 💊 جرعة الأنسولين:
+                } else {
+                    break;
                 }
             }
         }
 
     }
 
-    static void printHello() {
+    static void printWelcomeMessage() {
 
         System.out.println(
                 """
@@ -172,5 +168,6 @@ public class App {
                                                                                   ███▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄██
                                                                                    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
                         """);
+        // طباعة فن ASCII للترحيب بالمستخدم
     }
 }
